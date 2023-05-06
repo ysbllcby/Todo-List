@@ -38,16 +38,21 @@ const item3 = new Item({
 const defaultItems = [item1, item2, item3];
 
 // Insert items into database
-Item.insertMany(defaultItems);
+// Item.insertMany(defaultItems);
 
 app.get("/", async (req, res) => {
-  try {
-    await Item.find({ });
-    res.send(defaultItems);
-    console.log(defaultItems);
-  } catch (err) {
+  
+  Item.find()
+  .then(function (items) {
+    if (items.length === 0) {
+      Item.insertMany(items);
+    } else {
+      res.render("list", {listTitle: "Today", newListItems: items});
+    }
+  })
+  .catch(function (err) {
     console.log(err);
-  }
+  });
 });
 
 app.post("/", function(req, res){
