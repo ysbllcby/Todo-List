@@ -37,6 +37,13 @@ const item3 = new Item({
 
 const defaultItems = [item1, item2, item3];
 
+const listSchema = {
+  name: String,
+  items: [itemsSchema],
+};
+
+const List = mongoose.model("list", listSchema);
+
 // Insert items into database
 // Item.insertMany(defaultItems);
 
@@ -47,6 +54,30 @@ app.get("/", async (req, res) => {
         Item.insertMany(items);
       } else {
         res.render("list", { listTitle: "Today", newListItems: items });
+      }
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+});
+
+app.get("/:customListName", function (req, res) {
+  const customListName = req.params.customListName;
+
+  List.findOne({ name: customListName })
+    .then(function (foundList) {
+      if (!foundList) {
+        const list = new List({
+          name: customListName,
+          items: defaultItems,
+        });
+        list.save();
+        res.redirect("/" + customListName);
+      } else {
+        res.render("list", {
+          listTitle: foundList.name,
+          newListItems: foundList.items,
+        });
       }
     })
     .catch(function (err) {
@@ -74,10 +105,6 @@ app.post("/delete", (req, res) => {
     .catch((err) => {
       console.log(err);
     });
-});
-
-app.get("/work", function (req, res) {
-  res.render("list", { listTitle: "Work List", newListItems: workItems });
 });
 
 app.get("/about", function (req, res) {
