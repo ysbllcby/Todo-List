@@ -12,8 +12,24 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-// Create and connect mongoose database
-mongoose.connect("mongodb://127.0.0.1:27017/todolistDB");
+// // Create and connect mongoose database
+// mongoose.connect("mongodb://127.0.0.1:27017/todolistDB");
+
+// mongoose.connect(
+//   "mongodb+srv://admin-ysa:Test123@cluster0.ljm0uov.mongodb.net/todolist?ssl=true&authSource=admin&w=majority"
+// );
+
+// mongoose.connect(
+//   "mongodb+srv://admin-ysa:Test123@cluster0.ljm0uov.mongodb.net/todolist?ssl=true&authSource=admin&w=majority",
+//   {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+//   }
+// );
+
+mongoose.connect(
+  "mongodb+srv://admin-ysa:Test123@cluster0.ljm0uov.mongodb.net/todolistDB"
+);
 
 // Schema for items
 const itemsSchema = {
@@ -48,18 +64,33 @@ const List = mongoose.model("list", listSchema);
 // Insert items into database
 // Item.insertMany(defaultItems);
 
+// app.get("/", async (req, res) => {
+//   Item.find()
+//     .then(function (items) {
+//       if (items.length === 0) {
+//         Item.insertMany(items);
+//       } else {
+//         res.render("list", { listTitle: "Today", newListItems: items });
+//       }
+//     })
+//     .catch(function (err) {
+//       console.log(err);
+//     });
+// });
+
 app.get("/", async (req, res) => {
-  Item.find()
-    .then(function (items) {
-      if (items.length === 0) {
-        Item.insertMany(items);
-      } else {
-        res.render("list", { listTitle: "Today", newListItems: items });
-      }
-    })
-    .catch(function (err) {
-      console.log(err);
-    });
+  try {
+    const items = await Item.find();
+
+    if (items.length === 0) {
+      await Item.insertMany(defaultItems);
+      res.redirect("/");
+    } else {
+      res.render("list", { listTitle: "Today", newListItems: items });
+    }
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 app.get("/:customListName", function (req, res) {
